@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>개역개정 타이핑 암송 노트</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4a6fa5">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --success: #28a745;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border-left: 4px solid var(--primary);
+            padding-left: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 70px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: none;
+            box-sizing: border-box;
+        }
+        .viewer {
+            min-height: 100px;
+            background: #f9f9f9;
+            border: 2px dashed #4a6fa5;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            line-height: 2.2;
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            word-break: keep-all;
+        }
+        .blank-input {
+            width: 80px;
+            font-size: 16px;
+            padding: 2px 5px;
+            margin: 0 3px;
+            border: 2px solid #aaa;
+            border-radius: 4px;
+            text-align: center;
+            background-color: #fff9e6;
+            transition: all 0.2s;
+        }
+        .blank-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+        }
+        .blank-input.correct {
+            border: 2px solid var(--success);
+            background-color: #e8f5e9;
+            color: var(--success);
+            font-weight: bold;
+        }
+        .blank-input.wrong {
+            border: 2px solid #dc3545;
+            background-color: #ffeade;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-warning { background-color: #e0a800; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-full { grid-column: span 2; }
+
+        .status {
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        .verse-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .verse-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+        }
+        .verse-item:last-child { border-bottom: none; }
+        .verse-checkbox { width: 18px; height: 18px; cursor: pointer; }
+        .verse-text-clickable {
+            flex-grow: 1;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .verse-item.completed .verse-text-clickable {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+        .delete-btn { background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 16px; padding: 0 5px; }
+
+        #installBtn {
+            display: none;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 15px;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<button id="installBtn">📲 홈 화면에 앱으로 설치하기</button>
+
+<div class="container">
+    <h2>📖 개역개정 타이핑 암송</h2>
+
+    <h3>✏️ 구절 추가 / 현재 구절</h3>
+    <textarea id="bibleInput" placeholder="암송할 개역개정 성경 구절을 입력하세요.">하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 이는 그를 믿는 자마다 멸망하지 않고 영생을 얻게 하려 하심이라 (요한복음 3:16)</textarea>
+
+    <div class="controls" style="margin-top: 8px;">
+        <button class="btn-success btn-full" onclick="saveCurrentVerse()">💾 현재 구절 목록에 저장</button>
+    </div>
+
+    <!-- 암송 화면 -->
+    <div id="bibleViewer" class="viewer">본문이 여기에 표시됩니다.</div>
+    <div id="statusText" class="status">가려진 분량: 0%</div>
+
+    <!-- 조작 버튼 -->
+    <div class="controls">
+        <button class="btn-secondary" onclick="loadInputVerse()">🔄 현재 입력창 글로 리셋</button>
+        <button class="btn-primary" onclick="hideRandom()">👁️ 랜덤 단어 숨기기</button>
+        <button class="btn-danger btn-full" onclick="hideAll()">🚫 전체 숨기기</button>
+        <button class="btn-warning btn-full" id="hintToggleBtn" onclick="toggleHints()">💡 전체 정답 힌트 보기</button>
+    </div>
+</div>
+
+<!-- 저장된 목록 창 -->
+<div class="container">
+    <h3>🗂️ 나의 암송 노트 & 체크리스트</h3>
+    <ul id="verseList" class="verse-list"></ul>
+</div>
+
+<script>
+    let originalWords = [];
+    let hiddenIndices = new Set();
+    let savedVerses = [];
+    let hintsVisible = false;
+
+    const STORAGE_KEY = 'savedBibleVerses';
+
+    function loadSavedVerses() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+            savedVerses = JSON.parse(data);
+        } else {
+            savedVerses = [
+                { text: "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 이는 그를 믿는 자마다 멸망하지 않고 영생을 얻게 하려 하심이라 (요한복음 3:16)", completed: false },
+                { text: "내가 네게 명령한 것이 아니냐 강하고 담대하라 두려워하지 말며 놀라지 말라 네가 어디로 가든지 네 하나님 여호와가 너와 함께 하느니라 하시니라 (여호수아 1:9)", completed: false }
+            ];
+            saveToStorage();
+        }
+        renderList();
+    }
+
+    function saveToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedVerses));
+    }
+
+    function loadInputVerse() {
+        const text = document.getElementById('bibleInput').value.trim();
+        if (!text) return;
+        originalWords = text.split(/\s+/);
+        hiddenIndices.clear();
+        resetHintState();
+        renderViewer();
+    }
+
+    function resetHintState() {
+        hintsVisible = false;
+        const btn = document.getElementById('hintToggleBtn');
+        if (btn) btn.innerText = '💡 전체 정답 힌트 보기';
+    }
+
+    // 암송 화면 렌더링 (텍스트와 입력 필드 조합)
+    function renderViewer() {
+        const viewer = document.getElementById('bibleViewer');
+        viewer.innerHTML = '';
+
+        originalWords.forEach((word, index) => {
+            if (hiddenIndices.has(index)) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'blank-input';
+                input.dataset.index = index;
+                const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+                input.style.width = `${Math.max(40, cleanWord.length * 18)}px`;
+                input.placeholder = `(${cleanWord.length}글자)`;
+
+                input.oninput = function() {
+                    checkAnswer(this, word);
+                };
+
+                viewer.appendChild(input);
+            } else {
+                const span = document.createElement('span');
+                span.innerText = word;
+                viewer.appendChild(span);
+            }
+            viewer.appendChild(document.createTextNode(' '));
+        });
+
+        updateStatus();
+    }
+
+    function checkAnswer(inputElement, correctWord) {
+        const userAnswer = inputElement.value.trim();
+
+        const cleanUser = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+        const cleanCorrect = correctWord.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+
+        if (cleanUser === cleanCorrect) {
+            inputElement.className = 'blank-input correct';
+            inputElement.value = correctWord;
+            inputElement.disabled = true;
+            focusNextInput(inputElement);
+        } else {
+            if (userAnswer.length >= cleanCorrect.length) {
+                inputElement.classList.add('wrong');
+            } else {
+                inputElement.classList.remove('wrong');
+            }
+        }
+    }
+
+    function focusNextInput(currentInput) {
+        const allInputs = Array.from(document.querySelectorAll('.blank-input'));
+        const currentIndex = allInputs.indexOf(currentInput);
+        if (currentIndex !== -1 && currentIndex + 1 < allInputs.length) {
+            allInputs[currentIndex + 1].focus();
+        } else {
+            checkAllCompleted();
+        }
+    }
+
+    function checkAllCompleted() {
+        const allInputs = document.querySelectorAll('.blank-input');
+        const allCorrect = Array.from(allInputs).every(input => input.disabled === true);
+        if (allCorrect && allInputs.length > 0) {
+            alert('🎉 대단합니다! 해당 구절을 완벽하게 타이핑 암송하셨습니다!');
+        }
+    }
+
+    function updateStatus() {
+        const percent = originalWords.length ? Math.round((hiddenIndices.size / originalWords.length) * 100) : 0;
+        document.getElementById('statusText').innerText = `가려진 빈칸: ${hiddenIndices.size}개 (전체 단어의 ${percent}%)`;
+    }
+
+    function saveCurrentVerse() {
+        const text = document.getElementById('bibleInput').value.trim();
+        if (!text) return;
+        if (savedVerses.some(v => v.text === text)) {
+            alert('이미 목록에 있는 구절입니다.');
+            return;
+        }
+        savedVerses.push({ text: text, completed: false });
+        saveToStorage();
+        renderList();
+    }
+
+    function renderList() {
+        const listEl = document.getElementById('verseList');
+        listEl.innerHTML = '';
+        if (savedVerses.length === 0) {
+            listEl.innerHTML = '저장된 구절이 없습니다.';
+            return;
+        }
+        savedVerses.forEach((verse, index) => {
+            const li = document.createElement('li');
+            li.className = `verse-item ${verse.completed ? 'completed' : ''}`;
+
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.className = 'verse-checkbox';
+            chk.checked = verse.completed;
+            chk.onchange = function() {
+                savedVerses[index].completed = chk.checked;
+                saveToStorage();
+                renderList();
+            };
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'verse-text-clickable';
+            textSpan.innerText = verse.text;
+            textSpan.onclick = function() {
+                document.getElementById('bibleInput').value = verse.text;
+                loadInputVerse();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.innerHTML = '❌';
+            delBtn.onclick = function() {
+                if (confirm('이 구절을 삭제하시겠습니까?')) {
+                    savedVerses.splice(index, 1);
+                    saveToStorage();
+                    renderList();
+                }
+            };
+
+            li.appendChild(chk);
+            li.appendChild(textSpan);
+            li.appendChild(delBtn);
+            listEl.appendChild(li);
+        });
+    }
+
+    function hideRandom() {
+        if (originalWords.length === 0) loadInputVerse();
+        if (hiddenIndices.size === originalWords.length) return;
+        const amountToHide = Math.max(1, Math.ceil(originalWords.length * 0.15));
+        let added = 0, attempts = 0;
+        while (added < amountToHide && hiddenIndices.size < originalWords.length && attempts < 100) {
+            const randomIndex = Math.floor(Math.random() * originalWords.length);
+            if (!hiddenIndices.has(randomIndex)) {
+                hiddenIndices.add(randomIndex);
+                added++;
+            }
+            attempts++;
+        }
+        resetHintState();
+        renderViewer();
+        const firstInput = document.querySelector('.blank-input');
+        if (firstInput) firstInput.focus();
+    }
+
+    function hideAll() {
+        if (originalWords.length === 0) loadInputVerse();
+        originalWords.forEach((_, index) => hiddenIndices.add(index));
+        resetHintState();
+        renderViewer();
+        const firstInput = document.querySelector('.blank-input');
+        if (firstInput) firstInput.focus();
+    }
+
+    // 힌트 보기 / 숨기기 토글
+    function toggleHints() {
+        if (hintsVisible) {
+            hideAllHints();
+        } else {
+            showAllHints();
+        }
+    }
+
+    function showAllHints() {
+        const inputs = document.querySelectorAll('.blank-input');
+        inputs.forEach(input => {
+            if (!input.disabled) {
+                const idx = input.dataset.index;
+                input.value = originalWords[idx];
+                input.style.color = '#d9534f';
+            }
+        });
+        hintsVisible = true;
+        const btn = document.getElementById('hintToggleBtn');
+        if (btn) btn.innerText = '🙈 힌트 다시 숨기기';
+    }
+
+    function hideAllHints() {
+        const inputs = document.querySelectorAll('.blank-input');
+        inputs.forEach(input => {
+            if (!input.disabled) {
+                input.value = '';
+                input.style.color = '';
+                input.classList.remove('wrong');
+            }
+        });
+        hintsVisible = false;
+        const btn = document.getElementById('hintToggleBtn');
+        if (btn) btn.innerText = '💡 전체 정답 힌트 보기';
+        const firstInput = document.querySelector('.blank-input:not(:disabled)');
+        if (firstInput) firstInput.focus();
+    }
+
+    window.onload = function() {
+        loadSavedVerses();
+        loadInputVerse();
+    };
+
+    // ---- PWA: 서비스 워커 등록 ----
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js').catch(() => {});
+        });
+    }
+
+    // ---- PWA: 설치 버튼 ----
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
+    });
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+    });
+    window.addEventListener('appinstalled', () => {
+        installBtn.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
